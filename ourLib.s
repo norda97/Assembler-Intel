@@ -1,14 +1,16 @@
 .data
-buff: .space 128 
+buff: .space 256 
+counter: .byte 255
 
 
 .text
 .global inImage
 inImage:
     leaq    buff, %rdi
-    movq    $128, %rsi
+    movq    $256, %rsi
     movq    stdin, %rdx
     call    fgets
+    ret
     
 
 
@@ -22,6 +24,8 @@ getText:
 
 .global getChar
 getChar:
+    call inImage
+    ret
 
 
 .global getInPos
