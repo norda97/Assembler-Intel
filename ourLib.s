@@ -1,18 +1,27 @@
 .data
-buff: .space 256 
-counter: .byte 255
+inBuff: .space 256
+inBufPos: .long -1
+
+outBuff: .space 256 
+outBufPos: .long -1
 
 
 .text
 .global inImage
 inImage:
-    leaq    buff, %rdi
+    pushq   %rdi
+    pushq   %rsi
+    pushq   %rdx
+    leaq    inBuff, %rdi
     movq    $256, %rsi
     movq    stdin, %rdx
     call    fgets
-    ret
-    
+    movb    $0, inBufPos
 
+    popq    %rdx
+    popq    %rsi
+    popq    %rdi
+    ret
 
 .global getInt
 getInt:
@@ -24,7 +33,21 @@ getText:
 
 .global getChar
 getChar:
-    call inImage
+    leaq    inBuff, %rdi
+    add     inBufPos, %rdi
+/*
+    movq    $-1, %rsi
+    cmp     (%rdi), %rsi
+    jne     getChar_start
+    call    inImage
+    */
+    getChar_start:
+    movq    $0, %rsi
+    cmp     (%rdi), %rsi
+    je      getChar_end
+    add     $1, inBufPos
+    getChar_end:
+        mov     (%rdi), %eax
     ret
 
 
@@ -37,8 +60,9 @@ setInPos:
 
 .global outImage
 outImage:
-    leaq    buff, %rdi
+    leaq    outBuff, %rdi
     call    puts
+    ret
 
 
 .global putInt
