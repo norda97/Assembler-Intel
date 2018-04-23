@@ -11,11 +11,15 @@ int main()
 {
     inImage();
 
-    char buf[5];
-    int n = getText(buf, 3);
+    char buf[10] = "00000";
+    int n = getText(buf, 10);
 
     printf("n: %d\n", n);
-    printf("buf: %s", buf);
+    printf("buf: %s\n", buf);
+
+    buf[0] = getChar();
+    buf[1] = '\0';
+    printf("char after string: %s\n", buf);
 
     /*
     char c = getChar();
@@ -30,7 +34,8 @@ int main()
     c = getChar();
     s[0] = c;
     printf(", %s", s);
-    */
+    */ 
+    gegeg 78kjsdf
     //outImage();
     printf("\n");
     return 0;
