@@ -39,23 +39,23 @@ checkAscii:
     cmpb    $48, %dil
     jl      checkAscii_else           
     # if line is reached we know it's a number
-    movb    $3, %eax
+    movl    $3, %eax
     jmp     checkAscii_end
 
     checkAscii_space:
-    movb    $1, %eax
+    movl    $1, %eax
     jmp     checkAscii_end
 
     checkAscii_plus:
-    movb    $1, %eax
+    movl    $1, %eax
     jmp     checkAscii_end
 
     checkAscii_minus:
-    movb    $2, %eax
+    movl    $2, %eax
     jmp     checkAscii_end
 
     checkAscii_else:
-    movb    $0, %eax
+    movl    $0, %eax
     jmp     checkAscii_end
 
     checkAscii_end:
@@ -63,18 +63,18 @@ checkAscii:
 
 .global getInt
 getInt:
-    movl    inBufPos, %edx
+    movq    inBufPos, %rdx
     leaq    inBuff, %rcx
     movq    $0, %r8     # is negative
     movq    $0, %r9     # the number
     movq    $0, %r10    # number counter
     getInt_loop:
-        cmpl    $256, %edx
+        cmpq    $256, %rdx
         jne     getInt_atEnd
         call    inImage
         jmp     getInt
         getInt_atEnd:
-            movb    (%rcx, %edx, 1), %dil
+            movb    (%rcx, %rdx, 1), %dil
             call    checkAscii
             cmpl    $0, %eax
             je      getInt_returnNum
@@ -87,7 +87,7 @@ getInt:
 
         getInt_number:
             subb    $48, %dil    
-            push    %dil
+            push    %rdi
             addq    $1, %r10
             jmp     getInt_loopEnd
 
@@ -98,31 +98,33 @@ getInt:
             jmp     getInt_loopEnd
         
         getInt_spacePlus:
+            movq    $0, %r8     # set plus
             cmp     $0, %r10    # if not first number
             jne     getInt_returnNum
 
         getInt_loopEnd:
-            addl    $1, %edx
+            incq    %rdx
             jmp     getInt_loop
 
-    getInt_returnNum:
+    getInt_returnNum:           # iterate through numbers on stack
         movq    $1, %rcx        # number iterator
         getInt_popLoop:
-            cmp     $0, %r10
+            cmpq     $0, %r10
             je      getInt_end
             
             pop     %rax
-            subq    $1, %r10    # remove one from stack counter
-            mulq    %rcx        # multiply number with 10 to power of x
-            addq    %rdx, %r9   # add multiplication in return number
-            movq    %rcx, %rax  # multiply iterator with 10
-            mulq    $10
-            movq    %rdx, %rcx
+            decq    %r10        # remove one from stack counter
+            imulq   %rcx, %rax  # multiply number with 10 to power of x
+            addq    %rax, %r9   # add multiplication in return number
+            imulq   $10, %rcx   # multiply iterator with 10
             jmp     getInt_popLoop
         getInt_end:
-
+        cmpq    $1, %r8
+        jne     getInt_ret
+        negq    %r9
+        getInt_ret:
+        movq    %rdx, inBufPos
         movl    %r9d, %eax
-
     ret
 
 .global getText
