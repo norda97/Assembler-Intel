@@ -1,47 +1,37 @@
 #include <stdio.h>
 
 extern void inImage();
-//extern void outImage();
+extern void outImage();
 extern char getChar();
 extern void setInPos(int pos);
 extern int getInPos();
+extern void setOutPos(int pos);
+extern int getOutPos();
 extern int getText(char* buf, int size);
 extern int getInt();
+extern void putText(char* buf);
+extern void putChar(char c);
 
 int main()
 {
-    inImage();
-
-    int num = getInt();
-    printf("num: %d\n", num);
-
-    char buf[10] = "00000";
-    int n = getText(buf, 10);
-
-    printf("n: %d\n", n);
-    printf("buf: %s\n", buf);
-
-    buf[0] = getChar();
-    buf[1] = '\0';
-    printf("char after string: %s\n", buf);
-
-
-
-    /*
-    char c = getChar();
-    char s[1];
-    s[0] = c;
-    printf(", %s", s);
+   
+    putText("Essay 1:a ...");
     
-    c = getChar();
-    s[0] = c;
-    printf(", %s", s);
+    printf("\n##############################################\n");
+    int t = getOutPos();
+      printf("\n##############################################\n");
+    printf("pos: %d\n", t);
+    
+    for(int i = 0; i < 100; i++)
+    {
+        putText("bajs");
+    }
+    printf("\n##############################################\n");
+    outImage();
 
-    c = getChar();
-    s[0] = c;
-    printf(", %s", s);
-    */ 
-    //outImage();
+    t = getOutPos();
+    printf("pos: %d\n", t);
+
     printf("\n");
     return 0;
 }

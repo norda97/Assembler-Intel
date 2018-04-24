@@ -3,7 +3,7 @@ inBuff: .space 256
 inBufPos: .long 256
 
 outBuff: .space 256 
-outBufPos: .long 256
+outBufPos: .long 0
 
 .text
 .global inImage
@@ -132,20 +132,27 @@ getText:
     movl    inBufPos, %edx
     leaq    inBuff, %rcx
     movq    $0, %r8
-    getText_loop:
-        cmp     $256, %edx
+    getText_loop:          
+        cmpl    $256, %edx
         jne     getText_atEnd
+        cmpq    $256, %rsi
+        jge     getText_end
         call    inImage
         jmp     getText
         getText_atEnd:
             movb    (%rcx, %rdx, 1), %r9b
+            incl    %edx
+            cmpb    $0, %r9b                # if \0 is reached stop looking for chars
+            je      getText_end
             movb    %r9b, (%rdi, %r8, 1)
-            add     $1, %r8d 
-            add     $1, %edx
-            cmp     %r8, %rsi
+            incl    %r8d
+            cmpq    %r8, %rsi
             jne     getText_loop
 
-    
+    getText_end:
+    decq    %r8                     
+    movb    $0, (%rdi, %r8, 1)      # Add \0 to end of buf
+    incq    %r8
     movl    %edx, inBufPos
     movl    %r8d, %eax
 
@@ -179,34 +186,92 @@ getInPos:
 
 .global setInPos
 setInPos:
-    # leaq    outBuff, %rdi
-    movq     %rdi, inBufPos 
+    cmpl    $0, %edi
+    jg      setInPos_continue 
+    movl    $0, %edi
+    setInPos_continue:
+    cmpl    $255, %edi
+    jl     setInPos_end 
+    movl    $255, %edi
+
+    setInPos_end:
+    movl    %edi, inBufPos 
     ret
 
 .global outImage
 outImage:
     leaq    outBuff, %rdi
+    movl    outBufPos, %esi
+    movb    $0, (%rdi, %rsi, 1)
     call    puts
+    leaq    outBuff, %rdi
+    movl    $0, outBufPos
+    movb    $0, (%rdi) 
     ret
-
 
 .global putInt
 putInt:
 
+    
+    ret
 
 .global putText
 putText:
+    movq    $0, %rsi
+    movl    outBufPos, %edx
+    leaq    outBuff, %r9
 
+    putText_loop:
+    cmp     $256 ,%edx
+    jne     putText_continue
+    call    outImage
+    jmp     putText
+
+    putText_continue:
+    movb    (%rdi, %rsi, 1), %r8b 
+    # Check if nullterminator is reached
+    cmpb    $0, %r8b
+    je      putText_end
+
+    movb    %r8b, (%r9d, %edx, 1)
+    incl    %edx
+    incq    %rsi
+    jmp     putText_loop
+
+    putText_end:
+    movl    %edx, outBufPos
+    ret
 
 .global putChar
 putChar:
-
+    movl    outBufPos, %edx
+    cmpl    $256, %edx 
+    jne     putChar_end   
+    call    outImage
+    movl    outBufPos, %edx
+    putChar_end:
+    leaq    outBuff, %rsi
+    movb    %dil, (%rsi, %rdx, 1) 
+    incl    %edx
+    movl    %edx, outBufPos
+    ret
 
 .global getOutPos
 getOutPos:
-
+    movl     outBufPos, %eax
+    ret
 
 .global setOutPos
 setOutPos:
+    cmpl    $0, %edi
+    jg      setOutPos_continue 
+    movl    $0, %edi
+    setOutPos_continue:
+    cmpl    $255, %edi
+    jl      setOutPos_end 
+    movl    $255, %edi
 
+    setOutPos_end:
+    movl    %edi, outBufPos 
+    ret
 
