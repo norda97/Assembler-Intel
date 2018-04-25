@@ -63,7 +63,9 @@ checkAscii:
 
 .global getInt
 getInt:
-    movq    inBufPos, %rdx
+    xorq    %rdx, %rdx
+    xorq    %rdi, %rdi
+    movl    inBufPos, %edx
     leaq    inBuff, %rcx
     movq    $0, %r8     # is negative
     movq    $0, %r9     # the number
@@ -98,9 +100,9 @@ getInt:
             jmp     getInt_loopEnd
         
         getInt_spacePlus:
-            movq    $0, %r8     # set plus
             cmp     $0, %r10    # if not first number
             jne     getInt_returnNum
+            movq    $0, %r8     # set plus
 
         getInt_loopEnd:
             incq    %rdx
@@ -121,9 +123,9 @@ getInt:
         getInt_end:
         cmpq    $1, %r8
         jne     getInt_ret
-        negq    %r9
+        negl    %r9d
         getInt_ret:
-        movq    %rdx, inBufPos
+        movl    %edx, inBufPos
         movl    %r9d, %eax
     ret
 
@@ -149,10 +151,8 @@ getText:
             cmpq    %r8, %rsi
             jne     getText_loop
 
-    getText_end:
-    decq    %r8                     
+    getText_end:                  
     movb    $0, (%rdi, %r8, 1)      # Add \0 to end of buf
-    incq    %r8
     movl    %edx, inBufPos
     movl    %r8d, %eax
 
@@ -212,12 +212,45 @@ outImage:
 .global putInt
 putInt:
 
-    
+    movq    $0, %r8        # Counter for stack
+    xorq    %rax, %rax
+    movl    %edi, %eax
+    xorq    %rdi, %rdi
+
+    # Check negativity
+    cmpl    $0, %eax
+    jge     putInt_divLoop
+    negl    %eax
+    movb    $45, %dil
+    call    putChar
+
+    putInt_divLoop:
+        xorq    %rdx, %rdx
+
+        movq    $10, %r9
+        idivq   %r9
+        addb    $48, %dl
+        push    %rdx
+        incb    %r8b
+
+        cmpl    $0, %eax
+        jne     putInt_divLoop
+
+    putInt_printLoop:
+
+        pop     %rdi
+        decb    %r8b
+        call    putChar
+
+        cmpb    $0, %r8b
+        jne     putInt_printLoop
+
     ret
 
 .global putText
 putText:
     movq    $0, %rsi
+    xorq    %rdx, %rdx
     movl    outBufPos, %edx
     leaq    outBuff, %r9
 
@@ -233,7 +266,7 @@ putText:
     cmpb    $0, %r8b
     je      putText_end
 
-    movb    %r8b, (%r9d, %edx, 1)
+    movb    %r8b, (%r9, %rdx, 1)
     incl    %edx
     incq    %rsi
     jmp     putText_loop

@@ -11,27 +11,15 @@ extern int getText(char* buf, int size);
 extern int getInt();
 extern void putText(char* buf);
 extern void putChar(char c);
+extern void putInt(int i);
 
 int main()
 {
-   
-    putText("Essay 1:a ...");
-    
-    printf("\n##############################################\n");
-    int t = getOutPos();
-      printf("\n##############################################\n");
-    printf("pos: %d\n", t);
-    
-    for(int i = 0; i < 100; i++)
-    {
-        putText("bajs");
-    }
-    printf("\n##############################################\n");
+    inImage();
+    char c[12];
+    getText(c, 12);
+    putText(c);
+
     outImage();
-
-    t = getOutPos();
-    printf("pos: %d\n", t);
-
-    printf("\n");
     return 0;
 }
